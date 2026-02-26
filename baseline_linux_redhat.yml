@@ -1,5 +1,6 @@
 ---
 - name: Baseline Linux Server Provisioning
+  hosts: all
   become: yes
 
   vars:
