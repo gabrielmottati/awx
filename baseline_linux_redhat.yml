@@ -1,11 +1,8 @@
 ---
 - name: Baseline Linux Server Provisioning
-  hosts: linux_servers
   become: yes
 
   vars:
-    usuario_padrao: devops
-    ssh_port: 22
     pacotes_basicos:
       - vim
       - wget
