@@ -1,0 +1,71 @@
+---
+- name: Baseline Linux Server Provisioning
+  hosts: linux_servers
+  become: yes
+
+  vars:
+    usuario_padrao: devops
+    ssh_port: 22
+    pacotes_basicos:
+      - vim
+      - wget
+      - curl
+      - net-tools
+      - unzip
+      - bash-completion
+      - tcpdump
+
+  tasks:
+
+  - name: Atualizar sistema
+    yum:
+      name: "*"
+      state: latest
+
+  - name: Instalar pacotes básicos
+    yum:
+      name: "{{ pacotes_basicos }}"
+      state: present
+
+  - name: Criar usuário padrão
+    user:
+      name: "{{ usuario_padrao }}"
+      shell: /bin/bash
+      groups: wheel
+      append: yes
+
+  - name: Criar diretório .ssh
+    file:
+      path: "/home/{{ usuario_padrao }}/.ssh"
+      state: directory
+      owner: "{{ usuario_padrao }}"
+      group: "{{ usuario_padrao }}"
+      mode: 0700
+
+  - name: Adicionar chave pública SSH
+    authorized_key:
+      user: "{{ usuario_padrao }}"
+      state: present
+      key: "{{ lookup('file', 'files/id_rsa.pub') }}"
+
+  - name: Instalar Zabbix Agent
+    yum:
+      name: zabbix-agent
+      state: present
+
+  - name: Garantir que o serviço Zabbix esteja habilitado
+    service:
+      name: zabbix-agent
+      state: started
+      enabled: yes
+
+  - name: Desabilitar login root via SSH
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^PermitRootLogin'
+      line: 'PermitRootLogin no'
+
+  - name: Reiniciar SSH
+    service:
+      name: sshd
+      state: restarted
