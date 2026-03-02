@@ -32,20 +32,6 @@
       groups: wheel
       append: yes
 
-  - name: Criar diretório .ssh
-    file:
-      path: "/home/{{ usuario_padrao }}/.ssh"
-      state: directory
-      owner: "{{ usuario_padrao }}"
-      group: "{{ usuario_padrao }}"
-      mode: 0700
-
-  - name: Adicionar chave pública SSH
-    authorized_key:
-      user: "{{ usuario_padrao }}"
-      state: present
-      key: "{{ lookup('file', 'files/id_rsa.pub') }}"
-
   - name: Instalar Zabbix Agent
     yum:
       name: zabbix-agent
@@ -56,12 +42,6 @@
       name: zabbix-agent
       state: started
       enabled: yes
-
-  - name: Desabilitar login root via SSH
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      regexp: '^PermitRootLogin'
-      line: 'PermitRootLogin no'
 
   - name: Reiniciar SSH
     service:
